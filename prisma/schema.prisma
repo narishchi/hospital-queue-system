@@ -1,0 +1,72 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Student {
+  id          Int      @id @default(autoincrement())
+  studentCode String   @unique
+  name        String
+  email       String?
+  major       String
+  year        Int
+  status      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String?
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Department {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  code      String   @unique
+  isActive  Boolean  @default(true)
+  queues    Queue[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Queue {
+  id             Int         @id @default(autoincrement())
+  queueNumber    String
+  patientName    String
+  departmentId   Int
+  department     Department  @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  status         QueueStatus @default(WAITING)
+  queueDate      DateTime    @default(now())
+  calledAt       DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@unique([departmentId, queueDate, queueNumber])
+  @@index([departmentId, status, queueDate])
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  USER
+}
+
+enum QueueStatus {
+  WAITING
+  CALLING
+  SERVING
+  COMPLETED
+  CANCELLED
+  SKIPPED
+}
